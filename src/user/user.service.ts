@@ -3,13 +3,15 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Body,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+// import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {
@@ -18,30 +20,26 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
-    try {
-      const existingUser = await this.userRepository.findOne({
-        where: { email: createUserDto.email },
-      });
-      if (existingUser)
-        throw new ConflictException('User with this email already exists');
-      if (createUserDto.password !== createUserDto.confirmPassword)
-        throw new BadRequestException('Passwords do not match');
+  async findByEmail(email: string): Promise<User | null> {
+    return await this.userRepository.findOne({
+      where: { email },
+      select: ['id', 'user_name', 'email', 'password'],
+    });
+  }
 
-      const hashedPassword = await bcrypt.hash(createUserDto.password, 12);
-
-      const user = this.userRepository.create({
-        ...createUserDto,
-        password: hashedPassword,
-      });
-
-      return await this.userRepository.save(user);
-    } catch (err) {
-      if (err.code === '23505') {
-        throw new ConflictException('User with this email already exists');
-      }
-      throw err;
+  async create(@Body() CreateUserDto: CreateUserDto): Promise<User> {
+    const existingUser = await this.findByEmail(CreateUserDto.email);
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
     }
+
+    const hashedPassword = await bcrypt.hash(CreateUserDto.password, 10);
+    const user = this.userRepository.create({
+      ...CreateUserDto,
+      password: hashedPassword,
+    });
+
+    return await this.userRepository.save(user);
   }
 
   async findAll() {
