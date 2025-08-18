@@ -1,26 +1,72 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Server } from './entities/server.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ServerService {
-  create(createServerDto: CreateServerDto) {
-    return 'This action adds a new server';
+  constructor(
+    @InjectRepository(Server)
+    private readonly serverRepository: Repository<Server>,
+  ) {}
+  async create(createServerDto: CreateServerDto) {
+    return await this.serverRepository.save(createServerDto);
   }
 
-  findAll() {
-    return `This action returns all server`;
+  async findAll() {
+    const servers = await this.serverRepository.find();
+    return {
+      message: 'Servers Retrived successfully',
+      length: servers.length,
+      data: {
+        servers,
+      },
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} server`;
+  async findOne(id: number) {
+    const server = await this.serverRepository.findOne({
+      where: { id },
+    });
+    if (!server) throw new NotFoundException(`Server with ID ${id} not found`);
+
+    return {
+      message: 'Server with ID ${id} retrived successfully',
+      data: {
+        server,
+      },
+    };
   }
 
-  update(id: number, updateServerDto: UpdateServerDto) {
-    return `This action updates a #${id} server`;
+  async update(id: number, updateServerDto: UpdateServerDto) {
+    const server = await this.serverRepository.findOne({
+      where: { id },
+    });
+
+    if (!server) throw new NotFoundException(`Server with ID ${id} not found`);
+
+    Object.assign(server, updateServerDto);
+    const updatedUser = await this.serverRepository.save(server);
+    return {
+      message: `Server with ID ${id} updated`,
+      data: {
+        updatedUser,
+      },
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} server`;
+  async remove(id: number) {
+    const server = await this.serverRepository.findOne({
+      where: { id },
+    });
+
+    if (!server) throw new NotFoundException(`Server with ID ${id} not found`);
+
+    await this.serverRepository.remove(server);
+    return {
+      messgae: `Server with ID ${id} removed`,
+    };
   }
 }
