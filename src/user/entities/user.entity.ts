@@ -1,12 +1,13 @@
-import { Exclude } from 'class-transformer';
 import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
+  ManyToMany,
 } from 'typeorm';
-
+import { Server } from 'src/server/entities/server.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -35,4 +36,10 @@ export class User {
 
   @UpdateDateColumn()
   modifiedAt: Date;
+
+  @OneToMany(() => Server, (server) => server.owner)
+  ownedServers: Server[];
+
+  @ManyToMany(() => Server, (server) => server.members)
+  memberServers: Server[];
 }
