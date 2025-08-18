@@ -37,9 +37,7 @@ export class AuthService {
         'Username OR password was wrong try again',
       );
     }
-
-    console.log();
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordValid = await this.comparePassword(
       loginDto.password,
       user.password,
     );
@@ -78,5 +76,12 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
       },
     );
+  }
+
+  private async comparePassword(
+    candidtatePassword: string,
+    userPassword: string,
+  ): Promise<boolean> {
+    return await bcrypt.compare(candidtatePassword, userPassword);
   }
 }

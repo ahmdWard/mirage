@@ -10,7 +10,7 @@ import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 interface AuthenticatedRequest extends Request {
-  user?: any; // you can replace `any` with your JWT payload type
+  user?: any;
 }
 
 @Injectable()
