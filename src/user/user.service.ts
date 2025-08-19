@@ -32,7 +32,10 @@ export class UserService {
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
-
+    if (CreateUserDto.password !== CreateUserDto.confirmPassword)
+      throw new ConflictException(
+        'Password and Confim Password are not the same',
+      );
     const hashedPassword = await bcrypt.hash(CreateUserDto.password, 10);
     const user = this.userRepository.create({
       ...CreateUserDto,
