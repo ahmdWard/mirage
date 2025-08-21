@@ -1,11 +1,11 @@
+import { APP_GUARD } from '@nestjs/core';
 import { forwardRef, Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
 import { UserModule } from 'src/user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwtAuth.guard';
-import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
