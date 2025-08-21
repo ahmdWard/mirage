@@ -68,7 +68,7 @@ export class AuthService {
   ): Promise<string> {
     return this.jwtService.signAsync(
       {
-        sub: userId,
+        userId,
         userEmail,
       },
       {
