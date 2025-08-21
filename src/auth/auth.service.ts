@@ -1,8 +1,8 @@
-import { CreateUserDto } from '../user/dto/create-user.dto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { UserService } from '../user/user.service';
 import { loginDto } from './dto/login-user.dto';
 
 @Injectable()
@@ -33,18 +33,11 @@ export class AuthService {
   async login(loginDto: loginDto) {
     const user = await this.UserService.findByEmail(loginDto.email);
     if (!user) {
-      throw new UnauthorizedException(
-        'Username OR password was wrong try again',
-      );
+      throw new UnauthorizedException('Username OR password was wrong try again');
     }
-    const isPasswordValid = await this.comparePassword(
-      loginDto.password,
-      user.password,
-    );
+    const isPasswordValid = await this.comparePassword(loginDto.password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException(
-        'Username OR password was wrong try again',
-      );
+      throw new UnauthorizedException('Username OR password was wrong try again');
     }
 
     const token = await this.generateToken(user.id, user.email);
@@ -62,10 +55,7 @@ export class AuthService {
     };
   }
 
-  private async generateToken(
-    userId: number,
-    userEmail: string,
-  ): Promise<string> {
+  private async generateToken(userId: number, userEmail: string): Promise<string> {
     return this.jwtService.signAsync(
       {
         userId,

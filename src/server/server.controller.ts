@@ -9,9 +9,9 @@ import {
   ParseIntPipe,
   Request,
 } from '@nestjs/common';
+import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { ServerService } from './server.service';
 import { CreateServerDto } from './dto/create-server.dto';
-import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { UpdateServerDto } from './dto/update-server.dto';
 // import { Public } from 'src/auth/decorators/public.decorator';
 
@@ -20,10 +20,7 @@ export class ServerController {
   constructor(private readonly serverService: ServerService) {}
 
   @Post()
-  create(
-    @Body() createServerDto: CreateServerDto,
-    @Request() req: AuthenticatedRequest,
-  ) {
+  create(@Body() createServerDto: CreateServerDto, @Request() req: AuthenticatedRequest) {
     return this.serverService.create(createServerDto, req);
   }
 
@@ -47,10 +44,7 @@ export class ServerController {
   }
 
   @Delete(':id')
-  remove(
-    @Param('id', new ParseIntPipe()) id: number,
-    @Request() req: AuthenticatedRequest,
-  ) {
+  remove(@Param('id', new ParseIntPipe()) id: number, @Request() req: AuthenticatedRequest) {
     return this.serverService.remove(id, req);
   }
 }
