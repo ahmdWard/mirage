@@ -20,6 +20,7 @@ export class ServerService {
     const server = this.serverRepository.create({
       ...createServerDto,
       ownerId: req.user.userId,
+      members: [{ id: req.user.userId }],
     });
 
     const savedServer = await this.serverRepository.save(server);
