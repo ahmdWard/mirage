@@ -13,5 +13,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
+        env:
+          HUSKY: 0
       - run: npm run lint
       - run: npm run test
