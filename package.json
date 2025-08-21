@@ -14,7 +14,7 @@
     "format": "prettier --write \"**/*.{ts,js,json,md,yml,yaml}\"",
     "test": "jest --passWithNoTests",
     "test:e2e": "jest --config test/jest-e2e.json",
-    "prepare": "husky"
+    "prepare": "is-ci || husky install"
   },
   "lint-staged": {
     "*.{ts,js,json,md,yml,yaml}": [
@@ -58,6 +58,7 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.0.0",
+    "is-ci": "^4.1.0",
     "jest": "^30.0.0",
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
