@@ -12,7 +12,10 @@ export class ChannelService {
     private readonly channelRepository: Repository<Channel>,
   ) {}
   async create(createChannelDto: CreateChannelDto) {
-    const channel = this.channelRepository.create(createChannelDto);
+    const channel = this.channelRepository.create({
+      ...createChannelDto,
+      server: { id: createChannelDto.serverId },
+    });
     await this.channelRepository.save(channel);
     return {
       message: 'channel created successfully',

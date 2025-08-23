@@ -1,14 +1,10 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Server } from './entities/server.entity';
-import { Repository } from 'typeorm';
-import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 @Injectable()
 export class ServerService {
   constructor(
@@ -58,11 +54,7 @@ export class ServerService {
     };
   }
 
-  async update(
-    id: number,
-    updateServerDto: UpdateServerDto,
-    req: AuthenticatedRequest,
-  ) {
+  async update(id: number, updateServerDto: UpdateServerDto, req: AuthenticatedRequest) {
     const server = await this.serverRepository.findOne({
       where: { id },
     });

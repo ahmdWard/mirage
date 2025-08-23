@@ -8,10 +8,12 @@ import {
   Delete,
   Query,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ChannelService } from './channel.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
+import { membershiGuard } from './guard/membership.guard';
 
 @Controller('channel')
 export class ChannelController {
@@ -23,6 +25,7 @@ export class ChannelController {
   }
 
   @Get()
+  @UseGuards(membershiGuard)
   findAll(@Query('serverId', ParseIntPipe) serverId: number) {
     return this.channelService.findAll(serverId);
   }

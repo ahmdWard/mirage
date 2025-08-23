@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export enum ChannelType {
   TEXT = 'text',
@@ -15,5 +15,6 @@ export class CreateChannelDto {
   type: ChannelType;
 
   @IsNotEmpty()
-  severId: number;
+  @IsNumber()
+  serverId: number;
 }
