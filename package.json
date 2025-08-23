@@ -6,6 +6,11 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "typeorm": "typeorm-ts-node-commonjs -d src/config/typeorm.config.ts",
+    "migration:generate": "npm run typeorm -- migration:generate src/migrations/$npm_config_name",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "seed": "ts-node -r tsconfig-paths/register src/seed/seed.ts",
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "nest start",

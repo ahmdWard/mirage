@@ -6,9 +6,11 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 
 import { User } from 'src/user/entities/user.entity';
+import { Channel } from 'src/channel/entities/channel.entity';
 
 @Entity('servers')
 export class Server {
@@ -30,8 +32,11 @@ export class Server {
   @ManyToMany(() => User, (user) => user.memberServers)
   @JoinTable({
     name: 'server_members',
-    joinColumn: { name: 'serverId' },
-    inverseJoinColumn: { name: 'userId' },
+    joinColumn: { name: 'server_id' },
+    inverseJoinColumn: { name: 'user_id' },
   })
   members: User[];
+
+  @OneToMany(() => Channel, (channel) => channel.server)
+  serverChannels: Channel[];
 }
