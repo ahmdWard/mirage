@@ -1,0 +1,54 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
+import { ChannelService } from './channel.service';
+import { CreateChannelDto } from './dto/create-channel.dto';
+import { UpdateChannelDto } from './dto/update-channel.dto';
+import { membershiGuard } from './guard/membership.guard';
+
+@Controller('channel')
+export class ChannelController {
+  constructor(private readonly channelService: ChannelService) {}
+
+  @Post()
+  create(@Body() createChannelDto: CreateChannelDto) {
+    return this.channelService.create(createChannelDto);
+  }
+
+  @Get()
+  @UseGuards(membershiGuard)
+  findAll(@Query('serverId', ParseIntPipe) serverId: number) {
+    return this.channelService.findAll(serverId);
+  }
+
+  @Get(':id')
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('serverId', ParseIntPipe) serverId: number,
+  ) {
+    return this.channelService.findOne(id, serverId);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('serverId', ParseIntPipe) serverId: number,
+    @Body() updateChannelDto: UpdateChannelDto,
+  ) {
+    return this.channelService.update(id, serverId, updateChannelDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number, @Query('serverId', ParseIntPipe) serverId: number) {
+    return this.channelService.remove(id, serverId);
+  }
+}
