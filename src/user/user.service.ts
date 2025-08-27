@@ -6,11 +6,11 @@ import {
   Body,
 } from '@nestjs/common';
 // import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { User } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
@@ -33,9 +33,7 @@ export class UserService {
       throw new ConflictException('User with this email already exists');
     }
     if (CreateUserDto.password !== CreateUserDto.confirmPassword)
-      throw new ConflictException(
-        'Password and Confim Password are not the same',
-      );
+      throw new ConflictException('Password and Confim Password are not the same');
     const hashedPassword = await bcrypt.hash(CreateUserDto.password, 10);
     const user = this.userRepository.create({
       ...CreateUserDto,

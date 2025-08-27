@@ -50,8 +50,8 @@ export class AuthService {
           email: user.email,
           user_name: user.user_name,
         },
-        access_token: token,
       },
+      access_token: token,
     };
   }
 

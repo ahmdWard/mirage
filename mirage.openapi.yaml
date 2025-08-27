@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: Mirage API — Users
+  version: 0.1.0
+servers:
+  - url: http://localhost:5000
+    description: Local dev
+  - url: https://staging.api.mirage.app
+    description: Staging
+  - url: https://api.mirage.app
+    description: Production
+security:
+  - bearerAuth: []
+tags:
+  - name: Users
+    description: User profile & management
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    IfMatch:
+      name: If-Match
+      in: header
+      required: false
+      schema:
+        type: string
+  schemas:
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              issue: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        user_name: { type: string, minLength: 2, maxLength: 32 }
+        global_name: { type: string, minLength: 2, maxLength: 64 }
+        email: { type: string, format: email }
+        avatar: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        modifiedAt: { type: string, format: date-time }
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+paths:
+  /user:
+    get:
+      tags: [User]
+      summary: Get current user profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: failed
+          ref: '#/components/responses/Unauthorized'
+    patch:
+      tags: [Users]
+      summary: Update current user profile
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_name: { type: string }
+                global_name: { type: string }
+                avatar: { type: string, nullable: true }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '412':
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
