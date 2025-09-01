@@ -1,22 +1,35 @@
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { loginDto } from './dto/login-user.dto';
+import { refreshTokensService } from './refresh-tokens.service';
+import { payload } from './interfaces/payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly UserService: UserService,
     private readonly jwtService: JwtService,
+    private readonly refreshTokensService: refreshTokensService,
   ) {}
+
+  async validateUserInService(email: string, password: string) {
+    try {
+      const user = await this.UserService.findByEmail(email);
+      if (user && (await this.UserService.comparePassword(password, user.password))) {
+        const { ...result } = user;
+        return result;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
 
   async register(createUserDto: CreateUserDto) {
     const user = await this.UserService.create(createUserDto);
-
-    // const token = await this.generateToken(user.id, user.email);
-
     return {
       message: 'User registered successfully',
       data: {
@@ -25,53 +38,65 @@ export class AuthService {
           email: user.email,
           user_name: user.user_name,
         },
-        // access_token: token,
       },
     };
   }
 
   async login(loginDto: loginDto) {
-    const user = await this.UserService.findByEmail(loginDto.email);
-    if (!user) {
-      throw new UnauthorizedException('Username OR password was wrong try again');
-    }
-    const isPasswordValid = await this.comparePassword(loginDto.password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Username OR password was wrong try again');
-    }
+    try {
+      const user = await this.validateUserInService(loginDto.email, loginDto.password);
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      const payload: payload = {
+        sub: user.id,
+      };
 
-    const token = await this.generateToken(user.id, user.email);
-
-    return {
-      message: 'Login successful',
-      data: {
-        user: {
-          id: user.id,
-          email: user.email,
-          user_name: user.user_name,
+      const accessToken = await this.generateTokens(payload);
+      const { refreshToken } = await this.refreshTokensService.issue(user.id);
+      return {
+        message: 'Login successful',
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            user_name: user.user_name,
+          },
+          accessToken,
         },
-      },
-      access_token: token,
-    };
+        refreshToken,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new UnauthorizedException('Login failed');
+    }
   }
-
-  private async generateToken(userId: number, userEmail: string): Promise<string> {
-    return this.jwtService.signAsync(
+  private async generateTokens(payload: payload): Promise<string> {
+    const accessToken = await this.jwtService.signAsync(
+      { payload },
       {
-        userId,
-        userEmail,
-      },
-      {
-        expiresIn: '1d',
         secret: process.env.JWT_SECRET,
+        expiresIn: '15s',
       },
     );
+    return accessToken;
   }
+  async refreshTokens(userId: number, rawRefreshToken: string) {
+    const [tokenId] = rawRefreshToken.split('.');
 
-  private async comparePassword(
-    candidtatePassword: string,
-    userPassword: string,
-  ): Promise<boolean> {
-    return await bcrypt.compare(candidtatePassword, userPassword);
+    const valid = await this.refreshTokensService.validate(rawRefreshToken);
+
+    if (!valid) throw new UnauthorizedException('Invalid or expired refresh token');
+
+    await this.refreshTokensService.revoke(userId, tokenId);
+
+    const payload: payload = {
+      sub: userId,
+    };
+    const accessToken = await this.generateTokens(payload);
+
+    const { refreshToken: newRefreshToken } = await this.refreshTokensService.issue(userId);
+
+    return { accessToken, refreshToken: newRefreshToken };
   }
 }

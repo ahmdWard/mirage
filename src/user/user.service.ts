@@ -5,7 +5,6 @@ import {
   BadRequestException,
   Body,
 } from '@nestjs/common';
-// import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -79,5 +78,9 @@ export class UserService {
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+  }
+
+  async comparePassword(candidatePassword: string, userpassord: string): Promise<boolean> {
+    return await bcrypt.compare(candidatePassword, userpassord);
   }
 }
