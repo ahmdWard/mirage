@@ -18,6 +18,7 @@ export class ServerService {
       ownerId: req.user.userId,
       members: [{ id: req.user.userId }],
     });
+    console.log(req.user.userId);
 
     const savedServer = await this.serverRepository.save(server);
 

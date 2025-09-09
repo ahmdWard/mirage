@@ -1,17 +1,39 @@
-// src/data-source.ts
-import { Channel } from 'src/channel/entities/channel.entity';
-import { Server } from 'src/server/entities/server.entity';
-import { User } from 'src/user/entities/user.entity';
-import { DataSource } from 'typeorm';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 
-export default new DataSource({
+export const typeOrmConfigFactory = (configService: ConfigService): TypeOrmModuleOptions => {
+  const config = {
+    type: 'postgres' as const,
+    host: configService.get<string>('DB_HOST'),
+    port: configService.get<number>('DB_PORT'),
+    username: configService.get<string>('DB_USERNAME'),
+    password: configService.get<string>('DB_PASSWORD'),
+    database: configService.get<string>('DB_NAME'),
+    autoLoadEntities: true,
+    synchronize: false,
+    logging: configService.get<string>('NODE_ENV') === 'development',
+  };
+
+  if (configService.get<string>('NODE_ENV') === 'development') {
+    console.log('TypeORM Config:', {
+      host: config.host,
+      port: config.port,
+      username: config.username,
+      database: config.database,
+    });
+  }
+
+  return config;
+};
+
+export const typeOrmConfig: TypeOrmModuleOptions = {
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: '10203040',
-  database: 'mirage',
-  entities: [__dirname + '/**/*.entity{.ts,.js}', User, Server, Channel],
-  migrations: [__dirname + '/migrations/*{.ts,.js}'],
-  synchronize: true,
-});
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  autoLoadEntities: true,
+  synchronize: false,
+  logging: process.env.NODE_ENV === 'development',
+};

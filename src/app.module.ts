@@ -1,22 +1,34 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
-import { DatabaseModule } from './config/databaseModule';
 import { AuthModule } from './auth/auth.module';
 import { ServerModule } from './server/server.module';
 import { ChannelModule } from './channel/channel.module';
 import { RedisModule } from './redis/redis.module';
+import { typeOrmConfigFactory } from './config/typeorm.config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: typeOrmConfigFactory,
+      inject: [ConfigService],
+    }),
+
     UserModule,
-    DatabaseModule,
     AuthModule,
     AuthModule,
     ServerModule,
     ChannelModule,
     RedisModule,
+    ConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],

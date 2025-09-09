@@ -8,13 +8,16 @@ import {
   Delete,
   ParseIntPipe,
   Request,
+  UseGuards,
 } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
+import { JwtAuthGuard } from '../auth/guards/jwtAuth.guard';
 import { ServerService } from './server.service';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 // import { Public } from 'src/auth/decorators/public.decorator';
 
+@UseGuards(JwtAuthGuard)
 @Controller('server')
 export class ServerController {
   constructor(private readonly serverService: ServerService) {}

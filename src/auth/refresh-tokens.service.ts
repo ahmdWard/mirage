@@ -4,7 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import * as bcrypt from 'bcrypt';
 
-const TTL_SECONDS = 30;
+const TTL_SECONDS = 1 * 24 * 60 * 60;
 // const sha256 = (s: string) => crypto.createHash('sha256').update(s).digest('hex');
 // const randomToken = (bytes = 32) => crypto.randomBytes(bytes).toString('base64url');
 

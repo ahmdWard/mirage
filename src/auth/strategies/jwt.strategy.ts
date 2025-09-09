@@ -11,7 +11,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly UserService: UserService,
     private readonly ConfigService: ConfigService,
   ) {
-    const jwtSecret = ConfigService.get<string>('jwt_Secret');
+    const jwtSecret = ConfigService.get<string>('JWT_SECRET');
     if (!jwtSecret) {
       throw new Error('JWT_SECRET environment variable is not set');
     }
@@ -22,11 +22,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: JwtPayload) {
-    console.log(`Validating JWT payload: ${JSON.stringify(payload)}`);
     const user = await this.UserService.findOne(payload.sub);
     return {
       userId: user.id,
-      email: user.email,
     };
   }
 }

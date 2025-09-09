@@ -10,15 +10,19 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwtAuth.guard';
 import { ChannelService } from './channel.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { membershiGuard } from './guard/membership.guard';
+import { ownerGuard } from './guard/ownership.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('channel')
 export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
+  @UseGuards(ownerGuard)
   @Post()
   create(@Body() createChannelDto: CreateChannelDto) {
     return this.channelService.create(createChannelDto);
