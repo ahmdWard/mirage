@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
+import { User } from '../user/entities/user.entity';
 import { CreateServerDto } from './dto/create-server.dto';
 import { UpdateServerDto } from './dto/update-server.dto';
 import { Server } from './entities/server.entity';
@@ -10,6 +11,8 @@ export class ServerService {
   constructor(
     @InjectRepository(Server)
     private readonly serverRepository: Repository<Server>,
+    @InjectRepository(User)
+    private readonly userRepoistory: Repository<User>,
   ) {}
 
   async create(createServerDto: CreateServerDto, req: AuthenticatedRequest) {
@@ -43,11 +46,14 @@ export class ServerService {
   async findOne(id: number) {
     const server = await this.serverRepository.findOne({
       where: { id },
+      relations: ['members'],
     });
+    if (!server) throw new NotFoundException('not found');
+    console.log(server.members.map((m) => m.id));
     if (!server) throw new NotFoundException(`Server with ID ${id} not found`);
 
     return {
-      message: 'Server with ID ${id} retrived successfully',
+      message: `Server with ID ${id} retrived successfully`,
       data: {
         server,
       },
@@ -86,5 +92,21 @@ export class ServerService {
     return {
       messgae: `Server with ID ${id} removed`,
     };
+  }
+
+  async joinServer(req: AuthenticatedRequest, serverId: number) {
+    const server = await this.serverRepository.findOne({
+      where: { id: serverId },
+      relations: ['members'],
+    });
+    if (!server) throw new NotFoundException('no server');
+    const user = await this.userRepoistory.findOne({
+      where: { id: req.user.userId },
+    });
+    if (!user) throw new NotFoundException('no user ');
+    if (server?.members.some((m) => m.id === user?.id)) return 'already Join';
+
+    server?.members.push(user);
+    await this.serverRepository.save(server);
   }
 }

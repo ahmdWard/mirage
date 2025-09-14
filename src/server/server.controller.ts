@@ -50,4 +50,9 @@ export class ServerController {
   remove(@Param('id', new ParseIntPipe()) id: number, @Request() req: AuthenticatedRequest) {
     return this.serverService.remove(id, req);
   }
+
+  @Post(':serverId/join')
+  join(@Param('serverId', new ParseIntPipe()) id: number, @Request() req: AuthenticatedRequest) {
+    return this.serverService.joinServer(req, id);
+  }
 }

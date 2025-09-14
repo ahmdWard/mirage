@@ -38,7 +38,15 @@ export class MessageService {
     });
     const savedMessage = await this.messageRepository.save(message);
     try {
-      this.chatGateway.server.to(`channel-${channelId}`).emit('message:new', savedMessage.content);
+      this.chatGateway.server.to(`channel-${channelId}`).emit('message:new', {
+        id: savedMessage.id,
+        content: savedMessage.content,
+        createdAt: savedMessage.createdAt,
+        author: {
+          id: savedMessage.author.id,
+          user_name: savedMessage.author.user_name,
+        },
+      });
     } catch (error) {
       console.log(error);
     }
