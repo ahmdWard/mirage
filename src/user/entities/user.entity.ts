@@ -8,6 +8,7 @@ import {
   ManyToMany,
 } from 'typeorm';
 import { Server } from 'src/server/entities/server.entity';
+import { Message } from 'src/message/entities/message.entity ';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -42,4 +43,7 @@ export class User {
 
   @ManyToMany(() => Server, (server) => server.members)
   memberServers: Server[];
+
+  @OneToMany(() => Message, (message) => message.author)
+  messages: Message[];
 }

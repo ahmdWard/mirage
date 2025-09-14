@@ -29,6 +29,7 @@ export class Server {
   @ManyToOne(() => User, (user) => user.ownedServers)
   @JoinColumn({ name: 'ownerId' })
   owner: User;
+
   @ManyToMany(() => User, (user) => user.memberServers)
   @JoinTable({
     name: 'server_members',

@@ -10,7 +10,7 @@ export const typeOrmConfigFactory = (configService: ConfigService): TypeOrmModul
     password: configService.get<string>('DB_PASSWORD'),
     database: configService.get<string>('DB_NAME'),
     autoLoadEntities: true,
-    synchronize: false,
+    synchronize: true,
     logging: configService.get<string>('NODE_ENV') === 'development',
   };
 

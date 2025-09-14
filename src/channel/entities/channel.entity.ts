@@ -1,5 +1,6 @@
+import { Message } from 'src/message/entities/message.entity ';
 import { Server } from 'src/server/entities/server.entity';
-import { Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Entity } from 'typeorm';
+import { Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Entity, OneToMany } from 'typeorm';
 
 @Entity('channel')
 export class Channel {
@@ -15,4 +16,7 @@ export class Channel {
   @ManyToOne(() => Server, (server) => server.serverChannels)
   @JoinColumn({ name: 'server_id' })
   server: Server;
+
+  @OneToMany(() => Message, (message) => message.channel)
+  messages: Message[];
 }
