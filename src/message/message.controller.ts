@@ -3,9 +3,10 @@ import { GetUser } from 'src/auth/decorators/user.decerator';
 import { JwtAuthGuard } from 'src/auth/guards/jwtAuth.guard';
 import { createMessageDto } from './dto/create-message.dto';
 import { MessageService } from './message.service';
+import { membershiGuard } from './guard/membership.guard';
 
 @Controller('channel/:channelId/messages')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, membershiGuard)
 export class MessageController {
   constructor(private readonly messagesService: MessageService) {}
   @Post()

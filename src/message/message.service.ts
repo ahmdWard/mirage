@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Channel } from 'src/channel/entities/channel.entity';
+import { ChatGateway } from '../chat/chat.gateway';
 import { Message } from './entities/message.entity ';
 import { createMessageDto } from './dto/create-message.dto';
 
@@ -15,6 +16,8 @@ export class MessageService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Channel)
     private readonly channelReposatory: Repository<Channel>,
+    @Inject(forwardRef(() => ChatGateway))
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   async createMessage(channelId: number, authorId: number, dto: createMessageDto) {
@@ -33,7 +36,13 @@ export class MessageService {
       channel,
       author,
     });
-    return await this.messageRepository.save(message);
+    const savedMessage = await this.messageRepository.save(message);
+    try {
+      this.chatGateway.server.to(`channel-${channelId}`).emit('message:new', savedMessage.content);
+    } catch (error) {
+      console.log(error);
+    }
+    return savedMessage;
   }
 
   async getMessages(channelId: number, limit = 50) {
