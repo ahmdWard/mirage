@@ -1,4 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { Channel } from 'src/channel/entities/channel.entity';
+import { Message } from './entities/message.entity ';
+import { createMessageDto } from './dto/create-message.dto';
 
 @Injectable()
-export class MessageService {}
+export class MessageService {
+  constructor(
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Channel)
+    private readonly channelReposatory: Repository<Channel>,
+  ) {}
+
+  async createMessage(channelId: number, authorId: number, dto: createMessageDto) {
+    const channel = await this.channelReposatory.findOne({
+      where: { id: channelId },
+    });
+    if (!channel) throw new BadRequestException('there is no chnnel');
+
+    const author = await this.userRepository.findOne({ where: { id: authorId } });
+    if (!author) {
+      throw new BadRequestException('User not found');
+    }
+
+    const message = this.messageRepository.create({
+      content: dto.content,
+      channel,
+      author,
+    });
+    return await this.messageRepository.save(message);
+  }
+
+  async getMessages(channelId: number, limit = 50) {
+    return this.messageRepository.find({
+      where: { channel: { id: channelId } },
+      relations: ['author'],
+      order: { createdAt: 'ASC' },
+      take: limit,
+    });
+  }
+}

@@ -9,6 +9,6 @@ export default new DataSource({
   database: process.env.DB_NAME || 'mentorny',
   entities: ['src/**/*.entity{.ts,.js}'], // Source entities for CLI
   migrations: ['src/migrations/*{.ts,.js}'],
-  synchronize: false,
+  synchronize: true,
   logging: process.env.NODE_ENV === 'development',
 });

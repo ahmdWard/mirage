@@ -11,7 +11,6 @@ import { RedisModule } from './redis/redis.module';
 import { typeOrmConfigFactory } from './config/typeorm.config';
 import { ChatModule } from './chat/chat.module';
 import { MessageModule } from './message/message.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({
