@@ -25,7 +25,6 @@ import { MessageModule } from './message/message.module';
 
     UserModule,
     AuthModule,
-    AuthModule,
     ServerModule,
     ChannelModule,
     RedisModule,

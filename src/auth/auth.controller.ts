@@ -69,7 +69,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/auth/refresh',
-      maxAge: 30 * 1000,
+      maxAge: 14 * 24 * 60 * 1000,
     });
 
     return { accessToken };
