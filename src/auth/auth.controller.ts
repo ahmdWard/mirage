@@ -12,9 +12,9 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { User } from 'src/user/entities/user.entity';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { loginDto } from './dto/login-user.dto';
 import { Public } from './decorators/public.decorator';
 import { refreshTokensService } from './refresh-tokens.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -35,8 +35,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Body() loginDto: loginDto, @Res({ passthrough: true }) res: Response) {
-    const { refreshToken, ...result } = await this.authService.login(loginDto);
+  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...result } = await this.authService.login(req.user as User);
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
