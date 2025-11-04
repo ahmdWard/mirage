@@ -1,18 +1,6 @@
-import { IsString, IsNotEmpty, IsEmail, MinLength, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, Matches } from 'class-validator';
 
-export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
-  user_name: string;
-
-  @IsString()
-  @IsNotEmpty()
-  global_name: string;
-
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
-
+export class updatePasswordDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
@@ -25,7 +13,4 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   confirmPassword: string;
-
-  @IsString()
-  avatar: string = 'default-avatar.png';
 }

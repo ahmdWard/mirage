@@ -28,8 +28,6 @@ export class membershiGuard implements CanActivate {
 
     if (!channel) throw new ForbiddenException('Channel not found');
 
-    console.log(channel);
-    console.log(userId);
     if (!channel.server.members.some((m) => m.id === userId)) {
       throw new ForbiddenException('You are not a member of this server');
     }

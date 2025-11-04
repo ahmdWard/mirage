@@ -1,51 +1,66 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   Res,
   UnauthorizedException,
   UseGuards,
-  // UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { JwtService } from '@nestjs/jwt';
+import { User } from 'src/user/entities/user.entity';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { loginDto } from './dto/login-user.dto';
 import { Public } from './decorators/public.decorator';
 import { refreshTokensService } from './refresh-tokens.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { updatePasswordDto } from './dto/updating-password-dto';
+import { ForgetPasswordDto } from './dto/forget-password-dto';
 @Public()
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly refreshTokensService: refreshTokensService,
-    private readonly JwtService: JwtService,
   ) {}
 
+  @HttpCode(HttpStatus.CREATED)
   @Post('register')
-  async register(@Body() CreateUserDto: CreateUserDto) {
-    return this.authService.register(CreateUserDto);
+  async register(@Body() CreateUserDto: CreateUserDto, @Req() req: Request) {
+    const baseURL = `${req.protocol}://${req.get('host')}`;
+    await this.authService.register(CreateUserDto, baseURL);
+    return {
+      status: 'success',
+      message: 'Account registered successfully',
+    };
   }
 
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Body() loginDto: loginDto, @Res({ passthrough: true }) res: Response) {
-    const { refreshToken, ...result } = await this.authService.login(loginDto);
+  async login(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...result } = await this.authService.login(req.user as User);
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 30 * 1000,
+      maxAge: 14 * 24 * 60 * 60 * 1000,
       path: '/auth/refresh',
     });
-    return result;
+    return {
+      status: 'success',
+      message: 'Account logged In successfully',
+      data: {
+        result,
+      },
+    };
   }
+
+  // async logOut();
 
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
@@ -55,7 +70,7 @@ export class AuthController {
       throw new UnauthorizedException('No refresh token');
     }
     const result = await this.refreshTokensService.validate(rawRefreshToken);
-    if (!result) throw new UnauthorizedException();
+    if (!result) throw new UnauthorizedException('Invalid refresh token');
 
     const userId = result.userId;
     const { accessToken, refreshToken } = await this.authService.refreshTokens(
@@ -69,9 +84,47 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/auth/refresh',
-      maxAge: 30 * 1000,
+      maxAge: 14 * 24 * 60 * 60 * 1000,
     });
+    return {
+      status: 'success',
+      message: 'Access token refreshed successfully',
+      data: {
+        accessToken,
+      },
+    };
+  }
 
-    return { accessToken };
+  @HttpCode(HttpStatus.OK)
+  @Post('forget-password')
+  async forgetPassword(@Body() ForgetPasswordDto: ForgetPasswordDto, @Req() req: Request) {
+    const baseURL = `${req.protocol}://${req.get('host')}`;
+
+    await this.authService.forgetPassword(ForgetPasswordDto.email, baseURL);
+
+    return {
+      status: 'success',
+      message: 'If an account exists with this email, a password reset link has been sent.',
+    };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password/:token')
+  async resetPassword(@Body() updatePasswordDto: updatePasswordDto, @Param('token') token: string) {
+    await this.authService.resetPassword(updatePasswordDto, token);
+    return {
+      status: 'success',
+      message: 'Password has been reset successfully',
+    };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get('verify/:token')
+  async verifyAccount(@Param('token') token: string) {
+    await this.authService.verifyAccount(token);
+    return {
+      status: 'success',
+      message: 'Account verified  successfully',
+    };
   }
 }

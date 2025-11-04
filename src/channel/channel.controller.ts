@@ -22,8 +22,8 @@ import { ownerGuard } from './guard/ownership.guard';
 export class ChannelController {
   constructor(private readonly channelService: ChannelService) {}
 
-  @UseGuards(ownerGuard)
   @Post()
+  @UseGuards(ownerGuard)
   create(@Body() createChannelDto: CreateChannelDto) {
     return this.channelService.create(createChannelDto);
   }
@@ -43,6 +43,7 @@ export class ChannelController {
   }
 
   @Patch(':id')
+  @UseGuards(ownerGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Query('serverId', ParseIntPipe) serverId: number,
@@ -52,6 +53,7 @@ export class ChannelController {
   }
 
   @Delete(':id')
+  @UseGuards(ownerGuard)
   remove(@Param('id', ParseIntPipe) id: number, @Query('serverId', ParseIntPipe) serverId: number) {
     return this.channelService.remove(id, serverId);
   }

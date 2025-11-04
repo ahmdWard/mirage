@@ -26,7 +26,7 @@ export class User {
   @Column({ select: false })
   password: string;
 
-  @Column()
+  @Column({ default: false })
   verifired: boolean;
 
   @Column()
