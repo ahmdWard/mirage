@@ -6,7 +6,7 @@ import { UserService } from '../user/user.service';
 import { MailService } from '../mail/mail.service';
 import { refreshTokensService } from './refresh-tokens.service';
 import { payload } from './interfaces/payload.interface';
-import { updatePassword } from './dto/updating-password-dto';
+import { updatePasswordDto } from './dto/updating-password-dto';
 
 @Injectable()
 export class AuthService {
@@ -18,21 +18,37 @@ export class AuthService {
   ) {}
 
   async validateUserInService(email: string, password: string) {
-    try {
-      const user = await this.UserService.findByEmail(email);
-      if (user && (await this.UserService.comparePassword(password, user.password))) {
-        const { ...result } = user;
-        return result;
-      }
-      return null;
-    } catch (error) {
-      console.log(error);
-      return null;
+    const user = await this.UserService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('Invalid email or password');
     }
+    console.log(user);
+
+    const isMatch = await this.UserService.comparePassword(password, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Invalid email or password');
+    }
+    console.log(user.verifired);
+
+    if (!user.verifired) {
+      throw new BadRequestException('Please verify your account before logging in');
+    }
+
+    const { ...safeUser } = user;
+    return safeUser;
   }
 
-  async register(createUserDto: CreateUserDto) {
+  async register(createUserDto: CreateUserDto, baseUrl: string) {
     const user = await this.UserService.create(createUserDto);
+    const payload: payload = {
+      sub: user.id,
+    };
+
+    const token = await this.generateTokens(payload, '2d');
+
+    const verifyLink = `${baseUrl}/auth/verify/${token}`;
+
+    await this.MailService.sendMail('verify', user.email, { VerifyLink: verifyLink });
     return {
       message: 'User registered successfully',
       data: {
@@ -70,10 +86,10 @@ export class AuthService {
       throw new UnauthorizedException('Login failed');
     }
   }
-  private async generateTokens(payload: payload): Promise<string> {
+  private async generateTokens(payload: payload, expire?: string): Promise<string> {
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: process.env.JWT_EXP,
+      expiresIn: expire || process.env.JWT_EXP,
     });
     return accessToken;
   }
@@ -109,11 +125,11 @@ export class AuthService {
 
     const resetURL = `${baseUrl}/auth/reset-password/${token}`;
 
-    await this.MailService.sendPasswordResetEmail(user.email, resetURL);
+    await this.MailService.sendMail('reset', user.email, { ResetLink: resetURL });
   }
 
-  async resetPassword(updatePassword: updatePassword, token: string) {
-    if (updatePassword.password !== updatePassword.confirmPassword) {
+  async resetPassword(updatePasswordDto: updatePasswordDto, token: string) {
+    if (updatePasswordDto.password !== updatePasswordDto.confirmPassword) {
       throw new BadRequestException('Passwords do not match');
     }
     try {
@@ -124,8 +140,8 @@ export class AuthService {
       const userId = payload.sub;
 
       await this.UserService.updatePassword(
-        updatePassword.password,
-        updatePassword.confirmPassword,
+        updatePasswordDto.password,
+        updatePasswordDto.confirmPassword,
         userId,
       );
     } catch (err) {
@@ -134,5 +150,18 @@ export class AuthService {
     }
   }
 
-  // private async verify
+  async verifyAccount(token: string) {
+    let payload: payload;
+    try {
+      payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+    } catch (err) {
+      console.log(err);
+      throw new UnauthorizedException('Invalid or expired verify token');
+    }
+
+    const userId = payload.sub;
+    return await this.UserService.verifyAccount(userId);
+  }
 }

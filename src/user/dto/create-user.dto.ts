@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEmail, IsBoolean, MinLength, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail, MinLength, Matches } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -25,9 +25,6 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   confirmPassword: string;
-
-  @IsBoolean()
-  verifired: boolean = false;
 
   @IsString()
   avatar: string = 'default-avatar.png';

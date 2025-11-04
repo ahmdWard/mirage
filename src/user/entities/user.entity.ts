@@ -26,7 +26,7 @@ export class User {
   @Column({ select: false })
   password: string;
 
-  @Column()
+  @Column({ default: false })
   verifired: boolean;
 
   @Column()
@@ -34,10 +34,6 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
-
-  // adding it as defulat cause the user need to verify first.
-  @Column({ default: false })
-  isVerified: boolean;
 
   @UpdateDateColumn()
   modifiedAt: Date;

@@ -22,7 +22,7 @@ export class UserService {
   async findByEmail(email: string): Promise<User | null> {
     return await this.userRepository.findOne({
       where: { email },
-      select: ['id', 'user_name', 'email', 'password'],
+      select: ['id', 'user_name', 'email', 'password', 'verifired'],
     });
   }
 
@@ -94,6 +94,18 @@ export class UserService {
 
     user.password = hashedPassword;
 
+    await this.userRepository.save(user);
+  }
+
+  async verifyAccount(id: number) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+
+    if (user.verifired) throw new ConflictException('you already verified your account');
+
+    user.verifired = true;
     await this.userRepository.save(user);
   }
 }
