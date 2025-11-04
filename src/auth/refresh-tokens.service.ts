@@ -5,8 +5,6 @@ import { Redis } from 'ioredis';
 import * as bcrypt from 'bcrypt';
 
 const TTL_SECONDS = 1 * 24 * 60 * 60;
-// const sha256 = (s: string) => crypto.createHash('sha256').update(s).digest('hex');
-// const randomToken = (bytes = 32) => crypto.randomBytes(bytes).toString('base64url');
 
 @Injectable()
 export class refreshTokensService {
@@ -21,8 +19,6 @@ export class refreshTokensService {
     const rawToken = `${tokenId}.${rawSecret}`;
     const secretHash = await bcrypt.hash(rawSecret, 10);
     const key = `refresh:${tokenId}`;
-    console.log(key);
-    console.log(rawSecret);
     await this.redis.set(
       key,
       JSON.stringify({ userId, hash: secretHash, ex: TTL_SECONDS }),

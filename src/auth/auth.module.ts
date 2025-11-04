@@ -3,6 +3,7 @@ import { UserModule } from 'src/user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailModule } from 'src/mail/mail.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './strategies/local.strategy';
@@ -18,10 +19,10 @@ import { refreshTokensService } from './refresh-tokens.service';
       useFactory: async (config: ConfigService) =>
         Promise.resolve({
           secret: config.getOrThrow<string>('JWT_SECRET'),
-          signOptions: { expiresIn: config.get<string>('JWT_ACCESS_EXPIRATION', '15m') },
         }),
       inject: [ConfigService],
     }),
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy, refreshTokensService],

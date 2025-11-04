@@ -1,16 +1,19 @@
 import { JwtService } from '@nestjs/jwt';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/user/entities/user.entity';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { UserService } from '../user/user.service';
+import { MailService } from '../mail/mail.service';
 import { refreshTokensService } from './refresh-tokens.service';
 import { payload } from './interfaces/payload.interface';
+import { updatePassword } from './dto/updating-password-dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly UserService: UserService,
     private readonly jwtService: JwtService,
+    private readonly MailService: MailService,
     private readonly refreshTokensService: refreshTokensService,
   ) {}
 
@@ -44,10 +47,6 @@ export class AuthService {
 
   async login(user: User) {
     try {
-      // const user = await this.validateUserInService(loginDto.email, loginDto.password);
-      // if (!user) {
-      //   throw new UnauthorizedException('Invalid credentials');
-      // }
       const payload: payload = {
         sub: user.id,
       };
@@ -74,7 +73,7 @@ export class AuthService {
   private async generateTokens(payload: payload): Promise<string> {
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: '10m',
+      expiresIn: process.env.JWT_EXP,
     });
     return accessToken;
   }
@@ -96,4 +95,44 @@ export class AuthService {
 
     return { accessToken, refreshToken: newRefreshToken };
   }
+
+  async forgetPassword(email: string, baseUrl: string) {
+    const user = await this.UserService.findByEmail(email);
+
+    if (!user) {
+      return;
+    }
+    const payload: payload = {
+      sub: user.id,
+    };
+    const token = await this.generateTokens(payload);
+
+    const resetURL = `${baseUrl}/auth/reset-password/${token}`;
+
+    await this.MailService.sendPasswordResetEmail(user.email, resetURL);
+  }
+
+  async resetPassword(updatePassword: updatePassword, token: string) {
+    if (updatePassword.password !== updatePassword.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+    try {
+      const payload: payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      const userId = payload.sub;
+
+      await this.UserService.updatePassword(
+        updatePassword.password,
+        updatePassword.confirmPassword,
+        userId,
+      );
+    } catch (err) {
+      console.log(err);
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+  }
+
+  // private async verify
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   Res,
@@ -18,6 +19,7 @@ import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { refreshTokensService } from './refresh-tokens.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { updatePassword } from './dto/updating-password-dto';
 @Public()
 @Controller('auth')
 export class AuthController {
@@ -73,5 +75,17 @@ export class AuthController {
     });
 
     return { accessToken };
+  }
+
+  @Post('forget-password')
+  async forgetPassword(@Body('eamil') email: string, @Req() req: Request) {
+    const baseURL = `${req.protocol}://${req.get('host')}`;
+
+    return this.authService.forgetPassword(email, baseURL);
+  }
+
+  @Post('reset-password/:token')
+  async resetPassword(@Body() updatePassword: updatePassword, @Param('token') token: string) {
+    return this.authService.resetPassword(updatePassword, token);
   }
 }
