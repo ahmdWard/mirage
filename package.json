@@ -49,16 +49,19 @@
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.1",
+    "i": "^0.3.7",
     "ioredis": "^5.7.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.10",
+    "npm": "^11.6.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "ua-parser-js": "^2.0.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

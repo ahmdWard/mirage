@@ -90,6 +90,10 @@ export class UserService {
     });
 
     if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+
+    if (newPassword !== ConfirmPassword) {
+      throw new BadRequestException('Password is not matched');
+    }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     user.password = hashedPassword;
