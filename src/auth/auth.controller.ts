@@ -127,4 +127,19 @@ export class AuthController {
       message: 'Account verified  successfully',
     };
   }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  logOut(@Res({ passthrough: true }) res: Response) {
+    res.cookie('refreshtoken', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      expires: new Date(0),
+    });
+    return {
+      status: 'success',
+      message: 'Account logged out successfully ',
+    };
+  }
 }
