@@ -13,6 +13,8 @@ import { typeOrmConfigFactory } from './config/typeorm.config';
 import { ChatModule } from './chat/chat.module';
 import { MessageModule } from './message/message.module';
 import { MailModule } from './mail/mail.module';
+import { SessionService } from './session/session.service';
+import { SessionModule } from './session/session.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -35,8 +37,9 @@ import { MailModule } from './mail/mail.module';
     ChatModule,
     MessageModule,
     MailModule,
+    SessionModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SessionService],
 })
 export class AppModule {}

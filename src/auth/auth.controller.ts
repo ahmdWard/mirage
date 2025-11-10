@@ -20,6 +20,7 @@ import { refreshTokensService } from './refresh-tokens.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { updatePasswordDto } from './dto/updating-password-dto';
 import { ForgetPasswordDto } from './dto/forget-password-dto';
+
 @Public()
 @Controller('auth')
 export class AuthController {
@@ -60,8 +61,6 @@ export class AuthController {
     };
   }
 
-  // async logOut();
-
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
@@ -78,7 +77,6 @@ export class AuthController {
       rawRefreshToken,
     );
 
-    // replace cookie with new refresh token
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

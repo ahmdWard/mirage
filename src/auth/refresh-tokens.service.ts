@@ -12,7 +12,7 @@ export class refreshTokensService {
   private generateRefreshToken(): string {
     return crypto.randomBytes(32).toString('hex');
   }
-  //  Issue a new refresh token for a user
+
   async issue(userId: number) {
     const tokenId = crypto.randomUUID();
     const rawSecret = this.generateRefreshToken();
@@ -28,7 +28,6 @@ export class refreshTokensService {
     return { refreshToken: rawToken };
   }
 
-  // Rotate a refresh token
   async rotate(rawToken: string) {
     const [tokenId, secret] = rawToken.split('.');
     if (!tokenId || !secret) return null;
@@ -50,13 +49,11 @@ export class refreshTokensService {
     return { userId: parsed.userId, newRefresh };
   }
 
-  //  Revoke a single token
   async revoke(userId: number, tokenId: string) {
     const tokenKey = `refresh:${userId}:${tokenId}`;
     await this.redis.del(tokenKey);
     await this.redis.srem(`sessions:${userId}`, tokenKey);
   }
-  // Revoke all tokens for a user
   // async revokeAll(userId: number) {
   //   let cursor = '0';
   //   const toDelete: string[] = [];
@@ -86,7 +83,6 @@ export class refreshTokensService {
   //   }
   // }
 
-  //  Validate a token exists and get user data
   async validate(rawToken: string): Promise<{ userId: number } | null> {
     const [tokenId, secret] = rawToken.split('.');
     if (!tokenId || !secret) return null;
