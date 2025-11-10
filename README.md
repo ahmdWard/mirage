@@ -1,3 +1,4 @@
 Mirage 
 
-a discord-clone-backend
+communication app 
+discord made in Home 
